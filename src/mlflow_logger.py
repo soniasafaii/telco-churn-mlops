@@ -1,7 +1,6 @@
 import mlflow
 import mlflow.sklearn
 import matplotlib.pyplot as plt
-import numpy as np
 
 from sklearn.metrics import ConfusionMatrixDisplay
 
@@ -12,7 +11,8 @@ def log_experiment(
         model_name,
         model,
         metrics,
-        confusion_matrix
+        confusion_matrix,
+        register_model=False
 ):
 
     mlflow.set_experiment(
@@ -25,9 +25,9 @@ def log_experiment(
     ):
 
 
-        # -----------------------
+        # =======================
         # Parameters
-        # -----------------------
+        # =======================
 
         mlflow.log_param(
             "dataset_version",
@@ -41,7 +41,8 @@ def log_experiment(
         )
 
 
-        # random seed
+        # Random seed
+
         if hasattr(model, "random_state"):
 
             mlflow.log_param(
@@ -50,9 +51,10 @@ def log_experiment(
             )
 
 
-        # model hyperparameters
+        # Hyperparameters
 
         params = model.get_params()
+
 
         for key, value in params.items():
 
@@ -63,15 +65,15 @@ def log_experiment(
                     value
                 )
 
-            except:
+            except Exception:
 
                 pass
 
 
 
-        # -----------------------
+        # =======================
         # Metrics
-        # -----------------------
+        # =======================
 
         for key, value in metrics.items():
 
@@ -81,9 +83,10 @@ def log_experiment(
             )
 
 
-        # -----------------------
+
+        # =======================
         # Confusion Matrix
-        # -----------------------
+        # =======================
 
         fig, ax = plt.subplots()
 
@@ -110,11 +113,26 @@ def log_experiment(
 
 
 
-        # -----------------------
+        # =======================
         # Model Artifact
-        # -----------------------
+        # =======================
 
-        mlflow.sklearn.log_model(
-            model,
-            name="model"
-        )
+        if register_model:
+
+            # Register only final model (v3)
+
+            mlflow.sklearn.log_model(
+                model,
+                name="model",
+                registered_model_name="TelcoChurnModel"
+            )
+
+
+        else:
+
+            # Save artifact only
+
+            mlflow.sklearn.log_model(
+                model,
+                name="model"
+            )
