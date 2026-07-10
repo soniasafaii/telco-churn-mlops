@@ -1,11 +1,12 @@
+import mlflow
+
+from src.mlflow_logger import log_experiment
+
 from src.data_loader import load_data
 
 from src.preprocessing import (
-    preprocess,
     prepare_raw_data_for_training
 )
-
-from src.features import feature_engineering
 
 from src.train import (
     split_data,
@@ -23,16 +24,19 @@ from src.evaluate import (
 
 def run_pipeline(dataset_version):
 
+
     print("=" * 50)
     print(f"Running pipeline for {dataset_version}")
     print("=" * 50)
 
 
+
     # -------------------------
-    # 1. Load Data
+    # Load Data
     # -------------------------
 
     df = load_data(dataset_version)
+
 
     print("Initial shape:")
     print(df.shape)
@@ -40,7 +44,7 @@ def run_pipeline(dataset_version):
 
 
     # -------------------------
-    # 2. Data Preparation
+    # Preparation
     # -------------------------
 
     if dataset_version == "v1":
@@ -57,11 +61,13 @@ def run_pipeline(dataset_version):
         df = df.copy()
 
 
+
     elif dataset_version == "v3":
 
         print("\nUsing feature engineered dataset...")
 
         df = df.copy()
+
 
 
     else:
@@ -78,7 +84,7 @@ def run_pipeline(dataset_version):
 
 
     # -------------------------
-    # 3. Split Data
+    # Split
     # -------------------------
 
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(df)
@@ -96,7 +102,7 @@ def run_pipeline(dataset_version):
 
 
     # -------------------------
-    # 4. Models
+    # Models
     # -------------------------
 
     models = get_models()
@@ -104,10 +110,11 @@ def run_pipeline(dataset_version):
 
 
     # -------------------------
-    # 5. Cross Validation
+    # Cross Validation
     # -------------------------
 
     print("\nCross Validation")
+
 
     cv_results = cross_validate_models(
         models,
@@ -118,7 +125,7 @@ def run_pipeline(dataset_version):
 
 
     # -------------------------
-    # 6. Model Selection
+    # Model Selection
     # -------------------------
 
     print("\nModel Selection")
@@ -139,7 +146,7 @@ def run_pipeline(dataset_version):
 
 
     # -------------------------
-    # 7. Final Training
+    # Final Training
     # -------------------------
 
     best_model = train_model(
@@ -151,7 +158,7 @@ def run_pipeline(dataset_version):
 
 
     # -------------------------
-    # 8. Final Test
+    # Final Test
     # -------------------------
 
     print("\nFinal Test Evaluation")
@@ -171,15 +178,34 @@ def run_pipeline(dataset_version):
 
 
 
-    return {
-    "dataset_version": dataset_version,
-    "best_model": best_name,
-    "cv_results": cv_results,
-    "validation_results": validation_results,
-    "test_metrics": test_metrics,
-    "confusion_matrix": cm
-    }
+    # -------------------------
+    # MLflow Logging
+    # -------------------------
 
+    log_experiment(
+        dataset_version=dataset_version,
+        model_name=best_name,
+        model=best_model,
+        metrics=test_metrics,
+        confusion_matrix=cm
+    )
+
+
+
+    return {
+
+        "dataset_version": dataset_version,
+
+        "best_model": best_name,
+
+        "cv_results": cv_results,
+
+        "validation_results": validation_results,
+
+        "test_metrics": test_metrics,
+
+        "confusion_matrix": cm
+    }
 
 
 
@@ -192,4 +218,3 @@ if __name__ == "__main__":
     results_v2 = run_pipeline("v2")
 
     results_v3 = run_pipeline("v3")
-
