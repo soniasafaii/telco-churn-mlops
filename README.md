@@ -306,8 +306,6 @@ telco_churn_mlops/
 │
 ├── Dockerfile
 │
-├── mlruns/
-│
 └── README.md
 ```
 
