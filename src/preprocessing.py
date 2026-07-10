@@ -62,11 +62,7 @@ def encode_features(df):
         include=["object"]
     ).columns
 
-    # df = pd.get_dummies(
-    #     df,
-    #     columns=categorical_columns,
-    #     drop_first=True
-    # )
+   
     df = pd.get_dummies(
     df,
     columns=categorical_columns,
